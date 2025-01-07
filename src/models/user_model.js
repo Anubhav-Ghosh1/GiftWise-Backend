@@ -3,11 +3,11 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 const userSchema = new mongoose.Schema({
-    watchHistory:
+    wishlist:
     [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Video",
+            ref: "Gift",
         }
     ],
     username:
@@ -39,10 +39,6 @@ const userSchema = new mongoose.Schema({
         type: String,
         // cloudinary url
     },
-    coverImage:
-    {
-        type: String,
-    },
     password:
     {
         type: String,
@@ -55,9 +51,6 @@ const userSchema = new mongoose.Schema({
     cloudinary_avatar_public_id:{
         type: String,
     },
-    cloudinary_coverImage_public_id:{
-        type: String,
-    }
 },{timestamps: true});
 
 userSchema.pre("save",async function(next)
