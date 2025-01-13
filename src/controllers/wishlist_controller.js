@@ -2,7 +2,9 @@ import asyncHandler from "../utils/asyncHandler.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import User from "../models/user_model.js";
 import Wishlist from "../models/wishlist_model.js";
+import Gift from "../models/gift_model.js"
 import QRCode from "qrcode";
+import { ApiError } from "../utils/ApiError.js";
 
 const createWishlist = asyncHandler(async (req, res) => {
     try {
@@ -12,7 +14,6 @@ const createWishlist = asyncHandler(async (req, res) => {
             return res.status(400).json(new ApiResponse(400,{},"All fields are required"))
         }
         const id = req.user._id;
-
         const user = await User.findById(id);
         if(!user)
         {
@@ -46,6 +47,40 @@ const createWishlist = asyncHandler(async (req, res) => {
     }
 });
 
+const addGiftToWishlist = asyncHandler(async(req,res) => {
+    try
+    {
+        const {giftId,wishlistId} = req.body;
+        if(!giftId || !wishlistId)
+        {
+            throw new ApiError(400,"All fields are required");
+        }
+
+        const wishlist = await Wishlist.findById(new mongoose.Types.ObjectId(wishlistId));
+        if(!wishlist)
+        {
+            throw new ApiError(404,"Wishlist is not present");
+        }
+
+        const gift = await Gift.findById(giftId);
+        if(!gift)
+        {
+            throw new ApiError(404,"Gift id is invalid");
+        }
+
+        const updatedWishlist = await Gift.findByIdAndUpdate(wishlist._id,{
+            $push:{
+                gifts: gift._id
+            }
+        },{new: true})
+        return res.status(200).json(new ApiResponse(200,updatedWishlist,"Gift added to the wishlist successfully"));
+    }
+    catch(e)
+    {
+        return res.status(500).json(new ApiResponse(500,{},"Error while adding product to wishlist"));
+    }
+})
+
 const getUserWishlist = asyncHandler(async (req,res) => {
     try
     {
@@ -64,4 +99,4 @@ const getUserWishlist = asyncHandler(async (req,res) => {
     }
 })
 
-export {createWishlist,getUserWishlist};
+export {createWishlist,addGiftToWishlist,getUserWishlist};
